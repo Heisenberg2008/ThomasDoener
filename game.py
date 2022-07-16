@@ -1,10 +1,13 @@
 import pygame
 import sys
 import pickle
+from pygame import mixer
 from os import path
 
 # General Setup
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+mixer.init()
 
 SCREEN_WIDTH = 1000
 SCREEN_HIGHT = 1000
@@ -22,6 +25,17 @@ restart_img = pygame.image.load("img/restart_btn.png")
 start_img = pygame.image.load("img/start_btn.png")
 exit_img = pygame.image.load("img/exit_btn.png")
 
+# Loading Sounds
+coin_fx = pygame.mixer.Sound('img/coin.wav')
+jump_fx = pygame.mixer.Sound('img/jump.wav')
+game_over_fx = pygame.mixer.Sound('img/game_over.wav')
+coin_fx.set_volume(0.5)
+jump_fx.set_volume(0.5)
+game_over_fx.set_volume(0.5)
+
+pygame.mixer.music.load('img/music.wav')
+pygame.mixer.music.play(-1, 0.0, 5000)
+
 # Define fonts
 font_score = pygame.font.SysFont('Bauhaus 93', 50)
 
@@ -29,7 +43,7 @@ font_score = pygame.font.SysFont('Bauhaus 93', 50)
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 1
+level = 0
 MAX_LEVEL = 7
 score = 0
 
@@ -105,6 +119,7 @@ class Player():
             if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
                 self.vel_y = -15
                 self.jumped = True
+                jump_fx.play()
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
             if key[pygame.K_a]:
@@ -167,9 +182,11 @@ class Player():
             # Check for collision (Enemies or Hazards)
             if pygame.sprite.spritecollide(self, blob_group, False):
                 game_over = -1
+                game_over_fx.play()
 
             if pygame.sprite.spritecollide(self, lava_group, False):
                 game_over = -1
+                game_over_fx.play()
 
             # Check for collision (Exit)
             if pygame.sprite.spritecollide(self, exit_group, False):
@@ -375,6 +392,7 @@ while True:
             # Coin check
             if pygame.sprite.spritecollide(player, coin_group, True):
                 score += 1
+                coin_fx.play()
             draw_text('X  ' + str(score), font_score, white, tile_size - 10, 10)
 
         blob_group.draw(screen)
