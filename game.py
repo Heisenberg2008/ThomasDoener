@@ -22,12 +22,27 @@ restart_img = pygame.image.load("img/restart_btn.png")
 start_img = pygame.image.load("img/start_btn.png")
 exit_img = pygame.image.load("img/exit_btn.png")
 
+# Define fonts
+font_score = pygame.font.SysFont('Bauhaus 93', 50)
+
 # Game variables
 tile_size = 50
 game_over = 0
 main_menu = True
 level = 1
 MAX_LEVEL = 7
+score = 0
+
+# Define Colors
+white = (255, 255, 255)
+blue = (0, 0, 255)
+
+# Functions go here
+
+# Text to Screen
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x ,y))
 
 # Reset level function
 def reset_level(level):
@@ -165,9 +180,10 @@ class Player():
             self.rect.x += dx
             self.rect.y += dy
 
-
+        # Player dead
         elif game_over == -1:
             self.image = self.dead_image
+            draw_text('GAME OVER!', font_score, blue, (SCREEN_WIDTH // 2) - 100, SCREEN_HIGHT // 2)
             if self.rect.y > 200:
                 self.rect.y -= 5
 
@@ -246,10 +262,15 @@ class World():
                     lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                     lava_group.add(lava)
 
+                # Monëy so big
+                if tile == 7:
+                    coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
+                    coin_group.add(coin)
+
+                # Level Exit
                 if tile == 8:
                     exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
                     exit_group.add(exit)
-
                 col_count += 1
             row_count += 1
 
@@ -287,6 +308,15 @@ class Lava(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+# Monëy so big
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, x , y):
+        pygame.sprite.Sprite.__init__(self)
+        img  = pygame.image.load("img/coin.png")
+        self.image = pygame.transform.scale(img, (tile_size // 2, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
 # Level exit class
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x , y):
@@ -302,6 +332,7 @@ player = Player(100, SCREEN_HIGHT - 130)
 
 blob_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 
 # Load level data
@@ -314,6 +345,10 @@ if path.exists(f'level{level}_data'):
 restart_button = Button(SCREEN_WIDTH // 2 - 50, SCREEN_HIGHT // 2 + 100, restart_img)
 start_button = Button(SCREEN_WIDTH // 2 - 350,  SCREEN_HIGHT // 2, start_img)
 exit_button = Button(SCREEN_WIDTH // 2 + 150, SCREEN_HIGHT // 2, exit_img)
+
+# Create score coin icon
+score_coin = Coin(tile_size // 2, tile_size // 2)
+coin_group.add(score_coin)
 
 # Main game loop
 while True:
@@ -337,8 +372,14 @@ while True:
         if game_over == 0:
             blob_group.update()
 
+            # Coin check
+            if pygame.sprite.spritecollide(player, coin_group, True):
+                score += 1
+            draw_text('X  ' + str(score), font_score, white, tile_size - 10, 10)
+
         blob_group.draw(screen)
         lava_group.draw(screen)
+        coin_group.draw(screen)
         exit_group.draw(screen)
 
         game_over = player.update(game_over)
@@ -346,10 +387,10 @@ while True:
         # Game Over
         if game_over == -1:
             if restart_button.draw():
-
-                # Restart the Player
-                player.reset(100, SCREEN_HIGHT -130)
+                world_data = []
+                world = reset_level(level)
                 game_over = 0
+                score = 0
 
         # When the Player wins    
         if game_over == 1:
@@ -360,6 +401,7 @@ while True:
                 world = reset_level(level)
                 game_over = 0
             else:
+                draw_text("YOU WIN!", font_score, blue, (SCREEN_WIDTH // 2) -140 , SCREEN_HIGHT // 2)
                 if restart_button.draw():
                     level = 1
                     # Reset level
