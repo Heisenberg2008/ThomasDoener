@@ -15,7 +15,7 @@ screen_width = 1000
 screen_height = 1000
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Thomas' Döner")
+pygame.display.set_caption("Thomas Döner")
 
 
 # Define font
@@ -55,6 +55,7 @@ game_over_fx = pygame.mixer.Sound('img/game_over.wav')
 game_over_fx.set_volume(0.5)
 
 
+# Function to load fonts
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
@@ -79,7 +80,7 @@ def reset_level(level):
     coin_group.add(score_coin)
     return world
 
-
+# Button Class
 class Button():
     def __init__(self, x, y, image):
         self.image = image
@@ -109,7 +110,7 @@ class Button():
 
         return action
 
-
+# Player Class
 class Player():
     def __init__(self, x, y):
         self.reset(x, y)
@@ -236,6 +237,7 @@ class Player():
         return game_over
 
 
+    # Resets the game on death
     def reset(self, x, y):
         self.images_right = []
         self.images_left = []
@@ -260,7 +262,7 @@ class Player():
         self.in_air = True
 
 
-
+# World Data handling
 class World():
     def __init__(self, data):
         self.tile_list = []
